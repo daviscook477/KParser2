@@ -31,5 +31,45 @@ namespace KParser.Conversion
         {
 
         }
+
+        private void InterpolateFrames(string animationName, int startId, int endId, int refId, ChildType type)
+        {
+
+        }
+
+        private XmlElement GetRef(string animationName, int id, int refId, ChildType type)
+        {
+            XmlElement spriterData = (XmlElement)BaseScml.GetElementsByTagName("spriter_data")[0];
+            XmlElement entity = GetFirstChildByName(spriterData, "entity");
+            XmlElement animation = GetFirstChildByAttribute(entity, "name", animationName);
+        }
+
+        private XmlElement GetFirstChildByName(XmlElement parent, string tagName)
+        {
+            foreach (XmlNode node in parent.ChildNodes)
+            {
+                if (node is XmlElement && node.Name.Equals(tagName))
+                {
+                    return (XmlElement)node;
+                }
+            }
+            return null;
+        }
+
+        private XmlElement GetFirstChildByAttribute(XmlElement parent, string attributeName, string attributeValue)
+        {
+            foreach (XmlNode node in parent.ChildNodes)
+            {
+                if (node is XmlElement)
+                {
+                    XmlElement element = (XmlElement)node;
+                    if (element.HasAttribute(attributeName) && element.GetAttribute(attributeName) == attributeValue)
+                    {
+                        return element;
+                    }
+                }
+            }
+            return null;
+        }
     }
 }

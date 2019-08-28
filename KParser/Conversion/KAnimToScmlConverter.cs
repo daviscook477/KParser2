@@ -4,12 +4,6 @@ using System.Xml;
 
 namespace KParser.Conversion
 {
-    enum ChildType
-    {
-        Sprite,
-        Bone
-    }
-
     class KAnimToScmlConverter
     {
         public const float MsPerS = 1000.0f;
@@ -157,7 +151,7 @@ namespace KParser.Conversion
             int rate = (int)(MsPerS / bank.Rate);
             int frameId = 0;
             SpriteIdProvider spriteIdProvider = new SpriteIdProvider(bank, AnimationFile.HashToName);
-            SymbolIdProvider symbolIdProvider = new SymbolIdProvider(bank, AnimationFile.HashToName);
+            SymbolIdProvider symbolIdProvider = new SymbolIdProvider(bank, spriteIdProvider.IdMap.Count, AnimationFile.HashToName);
             foreach (string name in symbolIdProvider.IdMap.Keys)
             {
                 boneNames.Add(name);
@@ -178,18 +172,18 @@ namespace KParser.Conversion
             int elementId = 0;
             foreach(Animation.Element element in frame.ElementsList)
             {
-                key.AppendChild(MakeBoneRefNode(scml, frame, element, frameId, spriteIdProvider, symbolIdProvider));
+                key.AppendChild(MakeBoneRefNode(scml, frame, element, frameId, symbolIdProvider));
                 key.AppendChild(MakeObjectRefNode(scml, frame, element, frameId, elementId++, spriteIdProvider, symbolIdProvider));
             }
             return key;
         }
 
-        private XmlElement MakeBoneRefNode(XmlDocument scml, Animation.Frame frame, Animation.Element element, int frameId, SpriteIdProvider spriteIdProvider, SymbolIdProvider symbolIdProvider)
+        private XmlElement MakeBoneRefNode(XmlDocument scml, Animation.Frame frame, Animation.Element element, int frameId, SymbolIdProvider symbolIdProvider)
         {
             XmlElement boneRef = scml.CreateElement(string.Empty, "bone_ref", string.Empty);
             int id = symbolIdProvider.GetId(frame, element);
             boneRef.SetAttribute("id", id.ToString());
-            boneRef.SetAttribute("timeline", (id + spriteIdProvider.IdMap.Count).ToString());
+            boneRef.SetAttribute("timeline", id.ToString());
             boneRef.SetAttribute("key", frameId.ToString());
             return boneRef;
         }
@@ -220,15 +214,15 @@ namespace KParser.Conversion
                 idToTimeline.Add(id, timeline);
             }
 
-            SymbolIdProvider symbolIdProvider = new SymbolIdProvider(bank, AnimationFile.HashToName);
+            SymbolIdProvider symbolIdProvider = new SymbolIdProvider(bank, spriteIdProvider.IdMap.Count, AnimationFile.HashToName);
             foreach (string name in symbolIdProvider.IdMap.Keys)
             {
                 XmlElement timeline = scml.CreateElement(string.Empty, "timeline", string.Empty);
                 int id = symbolIdProvider.IdMap[name];
-                timeline.SetAttribute("id", (id + spriteIdProvider.IdMap.Count).ToString());
+                timeline.SetAttribute("id", id.ToString());
                 timeline.SetAttribute("name", name);
                 timeline.SetAttribute("object_type", "bone");
-                idToTimeline.Add(id + spriteIdProvider.IdMap.Count, timeline);
+                idToTimeline.Add(id, timeline);
             }
 
             int frameId = 0;
@@ -237,7 +231,7 @@ namespace KParser.Conversion
                 foreach (Animation.Element element in frame.ElementsList)
                 {
                     idToTimeline[spriteIdProvider.GetId(frame, element)].AppendChild(MakeTimelineKeyNode(scml, element, frameId, rate, fileIdProvider, ChildType.Sprite));
-                    idToTimeline[symbolIdProvider.GetId(frame, element) + spriteIdProvider.IdMap.Count].AppendChild(MakeTimelineKeyNode(scml, element, frameId, rate, fileIdProvider, ChildType.Bone));
+                    idToTimeline[symbolIdProvider.GetId(frame, element)].AppendChild(MakeTimelineKeyNode(scml, element, frameId, rate, fileIdProvider, ChildType.Bone));
                 }
                 frameId++;
             }

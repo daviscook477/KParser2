@@ -7,14 +7,16 @@ namespace KParser.Conversion
     class SymbolIdProvider
     {
         public Animation.Bank Bank { get; internal set; }
+        public int Offset { get; internal set; }
         public Dictionary<int, string> HashToName { get; internal set; }
         public Dictionary<string, int> IdMap { get; internal set; }
 
         private SymbolOccurenceCache occurenceCache = null;
 
-        public SymbolIdProvider(Animation.Bank bank, Dictionary<int, string> hashToName)
+        public SymbolIdProvider(Animation.Bank bank, int offset, Dictionary<int, string> hashToName)
         {
             Bank = bank;
+            Offset = offset;
             HashToName = hashToName;
             occurenceCache = new SymbolOccurenceCache(HashToName);
             BuildIdMap();
@@ -49,7 +51,7 @@ namespace KParser.Conversion
         {
             Dictionary<string, int> symbolCountHistogram = GetSymbolCounts();
             IdMap = new Dictionary<string, int>();
-            int id = 0;
+            int id = Offset;
             foreach (string name in symbolCountHistogram.Keys)
             {
                 for (int i = 0; i < symbolCountHistogram[name]; i++)
