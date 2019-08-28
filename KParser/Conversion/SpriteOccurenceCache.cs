@@ -4,11 +4,11 @@ using System.Text;
 
 namespace KParser.Conversion
 {
-    class OccurenceCache
+    class SpriteOccurenceCache
     {
         public Dictionary<int, string> HashToName { get; internal set; }
 
-        public OccurenceCache(Dictionary<int, string> hashToName)
+        public SpriteOccurenceCache(Dictionary<int, string> hashToName)
         {
             HashToName = hashToName;
         }

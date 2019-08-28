@@ -4,19 +4,19 @@ using System.Text;
 
 namespace KParser.Conversion
 {
-    class ObjectIdProvider
+    class SpriteIdProvider
     {
         public Animation.Bank Bank { get; internal set; }
         public Dictionary<int, string> HashToName { get; internal set; }
         public Dictionary<string, int> IdMap { get; internal set; }
 
-        private OccurenceCache occurenceCache = null;
+        private SpriteOccurenceCache occurenceCache = null;
 
-        public ObjectIdProvider(Animation.Bank bank, Dictionary<int, string> hashToName)
+        public SpriteIdProvider(Animation.Bank bank, Dictionary<int, string> hashToName)
         {
             Bank = bank;
             HashToName = hashToName;
-            occurenceCache = new OccurenceCache(HashToName);
+            occurenceCache = new SpriteOccurenceCache(HashToName);
             BuildIdMap();
         }
 

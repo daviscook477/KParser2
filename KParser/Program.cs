@@ -15,7 +15,7 @@ namespace KParser
             Textures.File texturesFile = converter.GetTexturesFile();
             new Textures.Writer("C:\\Users\\Davis\\Documents\\slickster", texturesFile).WriteFile();
             Scml.File scmlFile = converter.GetScmlFile();
-            new Scml.Writer("C:\\Users\\Davis\\Documents\\slickster\\slickster.scml", scmlFile).WriteFile();
+            new Scml.Writer("C:\\Users\\Davis\\Documents\\slickster\\door_bunker.scml", scmlFile).WriteFile();
         }
     }
 }
