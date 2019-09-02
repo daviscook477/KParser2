@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using AnimData;
 using KParser.Conversion;
 using KParser.File;
 
@@ -12,7 +11,7 @@ namespace KParser
     {
         private static void Main(string[] args)
         {
-            Stopwatch stopWatch = new Stopwatch();
+            var stopWatch = new Stopwatch();
             stopWatch.Start();
             
             

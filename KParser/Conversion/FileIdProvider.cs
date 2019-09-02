@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using AnimData;
+using KParser.File;
 
 namespace KParser.Conversion
 {

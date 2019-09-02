@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
-using AnimData;
 using KParser.Animation;
 using KParser.File;
 using Frame = KParser.Build.Frame;

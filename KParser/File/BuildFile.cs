@@ -1,10 +1,7 @@
 ﻿using System;
-using System.IO;
-using KParser;
 using KParser.Build;
-using BinaryWriter = KParser.BinaryWriter;
 
-namespace AnimData
+namespace KParser.File
 {
     internal class BuildFile : IFile
     {
@@ -17,7 +14,7 @@ namespace AnimData
 
         public BuildFile(string filePath)
         {
-            if (File.Exists(filePath))
+            if (!System.IO.File.Exists(filePath))
                 Console.WriteLine($"Warning: the file at {filePath} already exists! Overwriting...");
             FilePath = filePath;
             BuildData = Parser.LoadFile(filePath);

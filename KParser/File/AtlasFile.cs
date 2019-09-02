@@ -1,8 +1,7 @@
 ﻿using System.Drawing;
 using System.IO;
-using KParser;
 
-namespace AnimData
+namespace KParser.File
 {
     internal class AtlasFile : IFile
     {
@@ -12,8 +11,8 @@ namespace AnimData
 
         public AtlasFile(string filePath)
         {
-            if (!File.Exists(filePath))
-                throw new FileNotFoundException($"ERROR: the file at {filePath} does not exist!");
+            if (!System.IO.File.Exists(filePath))
+                throw new FileNotFoundException($"The file at {filePath} does not exist!");
 
             FilePath = filePath;
             Atlas = new Bitmap(FilePath);

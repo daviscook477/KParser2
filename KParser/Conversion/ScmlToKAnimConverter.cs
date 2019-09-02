@@ -1,5 +1,4 @@
-﻿using AnimData;
-using KParser.File;
+﻿using KParser.File;
 
 namespace KParser.Conversion
 {
