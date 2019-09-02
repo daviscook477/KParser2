@@ -4,8 +4,8 @@ namespace KParser.Conversion
 {
     internal class TexturesToAtlasConverter
     {
-        private AtlasFile atlasFile = null;
-        private BuildFile buildFile = null;
+        private readonly AtlasFile atlasFile = null;
+        private readonly BuildFile buildFile = null;
 
         public TexturesToAtlasConverter(TextureFile texturesFile, ScmlFile scmlFile)
         {

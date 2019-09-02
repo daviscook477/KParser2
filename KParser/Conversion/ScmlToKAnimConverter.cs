@@ -4,7 +4,7 @@ namespace KParser.Conversion
 {
     internal class ScmlToKAnimConverter
     {
-        private AnimFile animationFile = null;
+        private readonly AnimFile animationFile = null;
         private AtlasFile atlasFile;
         private BuildFile buildFile;
 

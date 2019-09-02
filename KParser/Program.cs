@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading;
 using KParser.Conversion;
 using KParser.File;
 
@@ -13,7 +12,7 @@ namespace KParser
         {
             var stopWatch = new Stopwatch();
             stopWatch.Start();
-            
+
             var animFiles = new List<AnimFiles>
             {
                 new AnimFiles
@@ -26,7 +25,8 @@ namespace KParser
 
             foreach (var anim in animFiles)
             {
-                var converter = new KAnimToScmlConverter(anim.Atlas, anim.Build, anim.Anim, "../../../TestAnims/out/", "slickster.scml");
+                var converter = new KAnimToScmlConverter(anim.Atlas, anim.Build, anim.Anim, "../../../TestAnims/out/",
+                    "slickster.scml");
                 converter.GetTexturesFile().WriteFile();
                 converter.GetScmlFile().WriteFile();
             }

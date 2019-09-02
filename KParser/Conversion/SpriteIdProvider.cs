@@ -6,11 +6,10 @@ namespace KParser.Conversion
 {
     internal class SpriteIdProvider
     {
-        private SpriteOccurenceCache occurenceCache;
-
         public Bank Bank;
         public Dictionary<int, string> HashToName;
         public Dictionary<string, int> IdMap;
+        private readonly SpriteOccurenceCache occurenceCache;
 
         public SpriteIdProvider(Bank bank, Dictionary<int, string> hashToName)
         {

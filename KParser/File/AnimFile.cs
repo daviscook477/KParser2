@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using KParser.Animation;
 
 namespace KParser.File
@@ -7,7 +6,7 @@ namespace KParser.File
     internal class AnimFile : IFile
     {
         public const string Header = "ANIM";
-        public Animation.AnimData AnimData;
+        public AnimData AnimData;
 
         public string FilePath;
 
@@ -15,9 +14,7 @@ namespace KParser.File
         {
             FilePath = filePath;
             if (!System.IO.File.Exists(filePath))
-            {
                 throw new FileNotFoundException($"The anim file at {filePath} does not exist!");
-            }
 
             AnimData = Parser.LoadFile(filePath);
         }
