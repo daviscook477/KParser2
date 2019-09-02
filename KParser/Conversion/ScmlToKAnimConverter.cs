@@ -1,58 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using AnimData;
+using KParser.File;
 
 namespace KParser.Conversion
 {
-    class ScmlToKAnimConverter
+    internal class ScmlToKAnimConverter
     {
-        public Textures.File TexturesFile { get; internal set; }
-        public Scml.File ScmlFile { get; internal set; }
+        private AnimFile animationFile = null;
+        private AtlasFile atlasFile;
+        private BuildFile buildFile;
 
-        private bool converted = false;
-        private Atlas.File atlasFile = null;
-        private Build.File buildFile = null;
-        private Animation.File animationFile = null;
+        private bool converted;
+        public ScmlFile ScmlFile;
 
-        public ScmlToKAnimConverter(Textures.File texturesFile, Scml.File scmlFile)
+        public TextureFile TexturesFile;
+
+        public ScmlToKAnimConverter(TextureFile texturesFile, ScmlFile scmlFile)
         {
             TexturesFile = texturesFile;
             ScmlFile = scmlFile;
         }
 
-        public Atlas.File GetAtlasFile()
+        public AtlasFile GetAtlasFile()
         {
             if (!converted)
             {
                 ConvertFile();
                 converted = true;
             }
+
             return atlasFile;
         }
 
-        public Build.File GetBuildFile()
+        public BuildFile GetBuildFile()
         {
             if (!converted)
             {
                 ConvertFile();
                 converted = true;
             }
+
             return buildFile;
         }
 
-        public Animation.File GetAnimationFile()
+        public AnimFile GetAnimationFile()
         {
             if (!converted)
             {
                 ConvertFile();
                 converted = true;
             }
+
             return animationFile;
         }
 
         private void ConvertFile()
         {
-            TexturesToAtlasConverter texturesToAtlasConverter = new TexturesToAtlasConverter(TexturesFile, ScmlFile);
+            var texturesToAtlasConverter = new TexturesToAtlasConverter(TexturesFile, ScmlFile);
             atlasFile = texturesToAtlasConverter.GetAtlasFile();
             buildFile = texturesToAtlasConverter.GetBuildFile();
         }
