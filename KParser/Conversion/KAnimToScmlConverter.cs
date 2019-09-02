@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Xml;
 using KParser.Animation;
 using KParser.File;
@@ -21,18 +22,21 @@ namespace KParser.Conversion
         public AtlasFile AtlasFile;
         public BuildFile BuildFile;
         public string OutDir;
+        public string OutPath;
         private bool scmlConverted;
         private ScmlFile scmlFile;
 
         private bool texturesConverted;
         private TextureFile texturesFile;
 
-        public KAnimToScmlConverter(AtlasFile atlasFile, BuildFile buildFile, AnimFile animationFile, string outDir)
+        public KAnimToScmlConverter(AtlasFile atlasFile, BuildFile buildFile, AnimFile animationFile, string outDir,
+            string outFile)
         {
             AtlasFile = atlasFile;
             BuildFile = buildFile;
             AnimationFile = animationFile;
             OutDir = outDir;
+            OutPath = Path.Join(outDir, outFile);
         }
 
         public TextureFile GetTexturesFile()
@@ -54,7 +58,7 @@ namespace KParser.Conversion
             var xmlDeclaration = scmlData.CreateXmlDeclaration("1.0", "UTF-8", null);
             scmlData.AppendChild(root);
             scmlData.InsertBefore(xmlDeclaration, root);
-            scmlFile = new ScmlFile(OutDir, scmlData);
+            scmlFile = new ScmlFile(OutPath, scmlData);
             scmlConverted = true;
             return scmlFile;
         }

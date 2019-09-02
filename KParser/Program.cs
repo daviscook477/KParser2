@@ -14,7 +14,6 @@ namespace KParser
             var stopWatch = new Stopwatch();
             stopWatch.Start();
             
-            
             var animFiles = new List<AnimFiles>
             {
                 new AnimFiles
@@ -27,7 +26,7 @@ namespace KParser
 
             foreach (var anim in animFiles)
             {
-                var converter = new KAnimToScmlConverter(anim.Atlas, anim.Build, anim.Anim, "../../../TestAnims/out/");
+                var converter = new KAnimToScmlConverter(anim.Atlas, anim.Build, anim.Anim, "../../../TestAnims/out/", "slickster.scml");
                 converter.GetTexturesFile().WriteFile();
                 converter.GetScmlFile().WriteFile();
             }
