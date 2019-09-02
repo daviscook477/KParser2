@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
 using AnimData;
 using KParser.Conversion;
 using KParser.File;
@@ -9,6 +12,10 @@ namespace KParser
     {
         private static void Main(string[] args)
         {
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
+            
+            
             var animFiles = new List<AnimFiles>
             {
                 new AnimFiles
@@ -25,6 +32,10 @@ namespace KParser
                 converter.GetTexturesFile().WriteFile();
                 converter.GetScmlFile().WriteFile();
             }
+
+            stopWatch.Stop();
+            var ts = stopWatch.Elapsed;
+            Console.WriteLine($"Runtime: {ts.Hours:00}:{ts.Minutes:00}:{ts.Seconds:00}.{ts.Milliseconds / 10:00}");
         }
     }
 
