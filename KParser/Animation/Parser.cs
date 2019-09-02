@@ -77,6 +77,7 @@ namespace KParser.Animation
                             M4 = buffer.ReadFloat("m4"),
                             M5 = buffer.ReadFloat("m5"),
                             M6 = buffer.ReadFloat("m6"),
+                            Order = buffer.ReadFloat("order"),
                             ZIndex = -1
                         };
                         frame.ElementsList.Add(element);
