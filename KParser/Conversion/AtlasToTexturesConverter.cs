@@ -1,61 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
+using KParser.File;
 
 namespace KParser.Conversion
 {
-    class AtlasToTexturesConverter
+    internal class AtlasToTexturesConverter
     {
-        public Atlas.File AtlasFile { get; internal set; }
-        public Build.File BuildFile { get; internal set; }
+        public AtlasFile AtlasFile;
+        public BuildFile BuildFile;
 
-        private bool converted = false;
-        private Textures.File texturesFile = null;
+        private bool convertedTextures;
+        public string OutDir;
+        private TextureFile texturesFile;
 
-        public AtlasToTexturesConverter(Atlas.File atlasFile, Build.File buildFile)
+        public AtlasToTexturesConverter(AtlasFile atlasFile, BuildFile buildFile, string outDir)
         {
             AtlasFile = atlasFile;
             BuildFile = buildFile;
+            OutDir = outDir;
         }
 
-        public Textures.File GetTexturesFile()
+        public TextureFile GetTexturesFile()
         {
-            if (!converted)
-            {
-                ConvertFile();
-                converted = true;
-            }
-            return texturesFile;
-        }
+            if (convertedTextures) return texturesFile;
 
-        private void ConvertFile()
-        {
-            int imageWidth = AtlasFile.Atlas.Width;
-            int imageHeight = AtlasFile.Atlas.Height;
-            Dictionary<string, Bitmap> nameToBitmap = new Dictionary<string, Bitmap>();
-            foreach (Build.Symbol symbol  in BuildFile.Build.SymbolsList)
+            var imageWidth = AtlasFile.Atlas.Width;
+            var imageHeight = AtlasFile.Atlas.Height;
+            var nameToBitmap = new Dictionary<string, Bitmap>();
+            foreach (var symbol in BuildFile.BuildData.Build.SymbolsList)
+            foreach (var frame in symbol.FramesList)
             {
-                foreach (Build.Frame frame in symbol.FramesList)
+                var name = BuildFile.BuildData.HashToName[symbol.Hash] + '_' + frame.SourceFrameNum;
+                Console.WriteLine(name);
+                if (nameToBitmap.ContainsKey(name))
                 {
-                    string name = BuildFile.HashToName[symbol.Hash] + '_' + frame.SourceFrameNum;
-                    Console.WriteLine(name);
-                    if (nameToBitmap.ContainsKey(name))
-                    {
-                        Console.WriteLine($"Warning: symbol {name} was defined more than once!");
-                        continue;
-                    }
-
-                    int x1 = (int) (frame.X1 * imageWidth);
-                    int y1 = (int) ((frame.Y1 ) * imageHeight);
-                    int width = (int) ((frame.X2 - frame.X1) * imageWidth);
-                    int height = (int) ((frame.Y2 - frame.Y1) * imageHeight);
-                    Rectangle boundingBox = new Rectangle(x1, y1, width, height);
-                    Bitmap bitmap = AtlasFile.Atlas.Clone(boundingBox, AtlasFile.Atlas.PixelFormat);
-                    nameToBitmap.Add(name, bitmap);
+                    Console.WriteLine($"Warning: symbol {name} was defined more than once!");
+                    continue;
                 }
+
+                var x1 = (int) (frame.X1 * imageWidth);
+                var y1 = (int) (frame.Y1 * imageHeight);
+                var width = (int) ((frame.X2 - frame.X1) * imageWidth);
+                var height = (int) ((frame.Y2 - frame.Y1) * imageHeight);
+                var boundingBox = new Rectangle(x1, y1, width, height);
+                var bitmap = AtlasFile.Atlas.Clone(boundingBox, AtlasFile.Atlas.PixelFormat);
+                nameToBitmap.Add(name, bitmap);
             }
-            texturesFile = new Textures.File(nameToBitmap);
+
+            texturesFile = new TextureFile(OutDir, nameToBitmap);
+            convertedTextures = true;
+            return texturesFile;
         }
     }
 }

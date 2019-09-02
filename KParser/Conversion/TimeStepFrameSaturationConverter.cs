@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml;
+﻿using System.Xml;
 
 namespace KParser.Conversion
 {
-    class TimeStepFrameSaturationConverter
+    internal class TimeStepFrameSaturationConverter
     {
-        public XmlDocument BaseScml { get; internal set; }
+        private readonly XmlDocument saturatedScml = null;
 
-        private bool transformed = false;
-        private XmlDocument saturatedScml = null;
+        private bool transformed;
 
         public TimeStepFrameSaturationConverter(XmlDocument baseScml)
         {
             BaseScml = baseScml;
         }
+
+        public XmlDocument BaseScml { get; internal set; }
 
         public XmlDocument GetDebonedScml()
         {
@@ -24,12 +22,12 @@ namespace KParser.Conversion
                 TransformFile();
                 transformed = true;
             }
+
             return saturatedScml;
         }
 
         private void TransformFile()
         {
-
         }
     }
 }

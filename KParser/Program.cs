@@ -1,21 +1,46 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using KParser.Conversion;
+using KParser.File;
 
 namespace KParser
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
-            Atlas.File atlasFile = new Atlas.Parser("C:\\Users\\Davis\\Documents\\slickster\\oilfloater_0.png").GetFile();
-            Build.File buildFile = new Build.Parser("C:\\Users\\Davis\\Documents\\slickster\\oilfloater_build.bytes").GetFile();
-            Animation.File animationFile = new Animation.Parser("C:\\Users\\Davis\\Documents\\slickster\\oilfloater_anim.bytes").GetFile();
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
 
-            KAnimToScmlConverter converter = new KAnimToScmlConverter(atlasFile, buildFile, animationFile);
-            Textures.File texturesFile = converter.GetTexturesFile();
-            new Textures.Writer("C:\\Users\\Davis\\Documents\\slickster", texturesFile).WriteFile();
-            Scml.File scmlFile = converter.GetScmlFile();
-            new Scml.Writer("C:\\Users\\Davis\\Documents\\slickster\\door_bunker.scml", scmlFile).WriteFile();
+            var animFiles = new List<AnimFiles>
+            {
+                new AnimFiles
+                {
+                    Atlas = new AtlasFile("../../../TestAnims/oilfloater_0.png"),
+                    Build = new BuildFile("../../../TestAnims/oilfloater_build.bytes"),
+                    Anim = new AnimFile("../../../TestAnims/oilfloater_anim.bytes")
+                }
+            };
+
+            foreach (var anim in animFiles)
+            {
+                var converter = new KAnimToScmlConverter(anim.Atlas, anim.Build, anim.Anim, "../../../TestAnims/out/",
+                    "slickster.scml");
+                converter.GetTexturesFile().WriteFile();
+                converter.GetScmlFile().WriteFile();
+            }
+
+            stopWatch.Stop();
+            var ts = stopWatch.Elapsed;
+            Console.WriteLine($"Runtime: {ts.Hours:00}:{ts.Minutes:00}:{ts.Seconds:00}.{ts.Milliseconds / 10:00}");
         }
+    }
+
+    internal struct AnimFiles
+    {
+        public AtlasFile Atlas;
+        public BuildFile Build;
+        public AnimFile Anim;
     }
 }

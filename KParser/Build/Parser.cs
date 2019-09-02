@@ -1,113 +1,96 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace KParser.Build
 {
-    class Parser
+    internal class Parser
     {
         public const string ExpectedHeader = "BILD";
         public const int MinimumVersion = 10;
 
-        public string Path { get; internal set; }
-
-        private bool loaded = false;
-        private File file = null;
-
-        public Parser(string path)
+        public static BuildData LoadFile(string filePath)
         {
-            if (!System.IO.File.Exists(path))
-            {
-                throw new ArgumentException($"The build file specified at {path} does not exist!");
-            }
-            Path = path;
-        }
+            var buffer = new BinaryReader(System.IO.File.ReadAllBytes(filePath));
 
-        public File GetFile()
-        {
-            if (!loaded)
-            {
-                LoadFile();
-                loaded = true;
-            }
-            return file;
-        }
-
-        private void LoadFile()
-        {
-            byte[] bytes = System.IO.File.ReadAllBytes(Path);
-            BinaryReader buffer = new BinaryReader(bytes);
-
-            string header = buffer.ReadStringWithLength("header", ExpectedHeader.Length);
+            var header = buffer.ReadStringWithLength("header", ExpectedHeader.Length);
             buffer.AdvanceIndex(ExpectedHeader.Length);
-            if(!ExpectedHeader.Equals(header))
-            {
-                throw new InvalidOperationException($"Expected header to be {ExpectedHeader} but found {header}!");
-            }
 
-            Build build = LoadBuild(buffer);
-            Dictionary<int, string> hashToName = LoadDictionary(buffer);
-            file = new File(build, hashToName);
+            if (!ExpectedHeader.Equals(header))
+                throw new InvalidOperationException($"Expected header to be {ExpectedHeader} but found {header}!");
+
+            return new BuildData
+            {
+                Build = LoadBuild(buffer),
+                HashToName = LoadDictionary(buffer)
+            };
         }
 
-        private Build LoadBuild(BinaryReader buffer)
+        private static Build LoadBuild(BinaryReader buffer)
         {
-            int version = buffer.ReadInt("version");
+            var version = buffer.ReadInt("version");
             if (version < MinimumVersion)
+                throw new InvalidOperationException(
+                    $"Expected version to be at least {MinimumVersion} but found {version}!");
+
+            var build = new Build
             {
-                throw new InvalidOperationException($"Expected version to be at least {MinimumVersion} but found {version}!");
-            }
+                Version = version,
+                SymbolCount = buffer.ReadInt("symbols"),
+                FrameCount = buffer.ReadInt("frames"),
+                Name = buffer.ReadString("name"),
+                SymbolsList = new List<Symbol>()
+            };
 
-            int symbols = buffer.ReadInt("symbols");
-            int frames = buffer.ReadInt("frames");
-            string name = buffer.ReadString("name");
-            List<Symbol> symbolsList = new List<Symbol>();
-            Build build = new Build(version, symbols, frames, name, symbolsList);
-
-            for (int i = 0; i < build.Symbols; i++)
+            for (var i = 0; i < build.SymbolCount; i++)
             {
-                int hash = buffer.ReadInt("hash");
-                int path = buffer.ReadInt("path");
-                int color = buffer.ReadInt("color");
-                int flags = buffer.ReadInt("flags");
-                int numFrames = buffer.ReadInt("numFrames");
-                List<Frame> framesList = new List<Frame>();
-                Symbol symbol = new Symbol(hash, path, color, flags, numFrames, framesList);
-
-                int time = 0;
-                for (int j = 0; j < symbol.NumFrames; j++)
+                var symbol = new Symbol
                 {
-                    int sourceFrameNum = buffer.ReadInt("sourceFrameNum");
-                    int duration = buffer.ReadInt("duration");
-                    int buildImageIdx = buffer.ReadInt("buildImageIdx");
-                    float pivotX = buffer.ReadFloat("pivotX");
-                    float pivotY = buffer.ReadFloat("pivotY");
-                    float pivotWidth = buffer.ReadFloat("pivotWidth");
-                    float pivotHeight = buffer.ReadFloat("pivotHeight");
-                    float x1 = buffer.ReadFloat("x1");
-                    float y1 = buffer.ReadFloat("y1");
-                    float x2 = buffer.ReadFloat("x2");
-                    float y2 = buffer.ReadFloat("y2");
-                    Frame frame = new Frame(sourceFrameNum, duration, buildImageIdx, pivotX, pivotY, pivotWidth, pivotHeight, x1, y1, x2, y2, time);
+                    Hash = buffer.ReadInt("hash"),
+                    Path = buffer.ReadInt("path"),
+                    Color = buffer.ReadInt("color"),
+                    Flags = buffer.ReadInt("flags"),
+                    NumFrames = buffer.ReadInt("numFrames"),
+                    FramesList = new List<Frame>()
+                };
+
+                var time = 0;
+                for (var j = 0; j < symbol.NumFrames; j++)
+                {
+                    var frame = new Frame
+                    {
+                        SourceFrameNum = buffer.ReadInt("sourceFrameNum"),
+                        Duration = buffer.ReadInt("duration"),
+                        BuildImageIdx = buffer.ReadInt("buildImageIdx"),
+                        PivotX = buffer.ReadFloat("pivotX"),
+                        PivotY = buffer.ReadFloat("pivotY"),
+                        PivotWidth = buffer.ReadFloat("pivotWidth"),
+                        PivotHeight = buffer.ReadFloat("pivotHeight"),
+                        X1 = buffer.ReadFloat("x1"),
+                        Y1 = buffer.ReadFloat("y1"),
+                        X2 = buffer.ReadFloat("x2"),
+                        Y2 = buffer.ReadFloat("y2")
+                    };
                     time += frame.Duration;
                     symbol.FramesList.Add(frame);
                 }
+
                 build.SymbolsList.Add(symbol);
             }
 
             return build;
         }
 
-        private Dictionary<int, string> LoadDictionary(BinaryReader buffer)
+        private static Dictionary<int, string> LoadDictionary(BinaryReader buffer)
         {
-            Dictionary<int, string> hashToName = new Dictionary<int, string>();
-            int numHashes = buffer.ReadInt("numHashes");
-            for (int i = 0; i < numHashes; i++)
+            var hashToName = new Dictionary<int, string>();
+            var numHashes = buffer.ReadInt("numHashes");
+            for (var i = 0; i < numHashes; i++)
             {
-                int hash = buffer.ReadInt("hash");
-                string name = buffer.ReadString("name");
+                var hash = buffer.ReadInt("hash");
+                var name = buffer.ReadString("name");
                 hashToName.Add(hash, name);
             }
+
             return hashToName;
         }
     }

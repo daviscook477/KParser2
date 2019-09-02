@@ -4,16 +4,16 @@ using System.Text;
 
 namespace KParser
 {
-    class BinaryWriter
+    internal class BinaryWriter
     {
-        public string Path { get; internal set; }
-        public List<byte> RawData { get; internal set; }
-
         public BinaryWriter(string path)
         {
             Path = path;
             RawData = new List<byte>();
         }
+
+        public string Path { get; internal set; }
+        public List<byte> RawData { get; internal set; }
 
         public void Flush()
         {

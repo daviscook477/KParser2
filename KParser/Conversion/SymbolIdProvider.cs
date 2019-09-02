@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using KParser.Animation;
 
 namespace KParser.Conversion
 {
-    class SymbolIdProvider
+    internal class SymbolIdProvider
     {
-        public Animation.Bank Bank { get; internal set; }
-        public Dictionary<int, string> HashToName { get; internal set; }
-        public Dictionary<string, int> IdMap { get; internal set; }
+        private readonly SymbolOccurenceCache occurenceCache;
 
-        private SymbolOccurenceCache occurenceCache = null;
-
-        public SymbolIdProvider(Animation.Bank bank, Dictionary<int, string> hashToName)
+        public SymbolIdProvider(Bank bank, Dictionary<int, string> hashToName)
         {
             Bank = bank;
             HashToName = hashToName;
@@ -20,16 +16,20 @@ namespace KParser.Conversion
             BuildIdMap();
         }
 
-        public int GetId(Animation.Frame frame, Animation.Element element)
+        public Bank Bank { get; internal set; }
+        public Dictionary<int, string> HashToName { get; internal set; }
+        public Dictionary<string, int> IdMap { get; internal set; }
+
+        public int GetId(Frame frame, Element element)
         {
-            string name = NameOf(frame, element);
+            var name = NameOf(frame, element);
             return IdMap[name];
         }
 
-        public string NameOf(Animation.Frame frame, Animation.Element element)
+        public string NameOf(Frame frame, Element element)
         {
-            int precedingOccurences = occurenceCache.GetPrecedingOccurencesCount(frame, element);
-            string name = $"bone_{HashToName[element.Image]}_{precedingOccurences}";
+            var precedingOccurences = occurenceCache.GetPrecedingOccurencesCount(frame, element);
+            var name = $"bone_{HashToName[element.Image]}_{precedingOccurences}";
             return name;
         }
 
@@ -47,17 +47,15 @@ namespace KParser.Conversion
          */
         private void BuildIdMap()
         {
-            Dictionary<string, int> symbolCountHistogram = GetSymbolCounts();
+            var symbolCountHistogram = GetSymbolCounts();
             IdMap = new Dictionary<string, int>();
-            int id = 0;
-            foreach (string name in symbolCountHistogram.Keys)
-            {
-                for (int i = 0; i < symbolCountHistogram[name]; i++)
+            var id = 0;
+            foreach (var name in symbolCountHistogram.Keys)
+                for (var i = 0; i < symbolCountHistogram[name]; i++)
                 {
                     IdMap.Add($"bone_{name}_{i}", id++);
                     Console.WriteLine($"bone_{name}_{i} : {id - 1}");
                 }
-            }
         }
 
         /**
@@ -69,34 +67,32 @@ namespace KParser.Conversion
          * This allows for each instance of that same symbol to be
          * animated separately rather than confused for the same thing.
          */
-         private Dictionary<string, int> GetSymbolCounts()
+        private Dictionary<string, int> GetSymbolCounts()
         {
-            Dictionary<string, int> maxSymbolCountInAnyFrameHistogram = new Dictionary<string, int>();
-            foreach (Animation.Frame frame in Bank.FramesList)
+            var maxSymbolCountInAnyFrameHistogram = new Dictionary<string, int>();
+            foreach (var frame in Bank.FramesList)
             {
                 // determine the maximum number of times a symbol occurs within this specific frame
-                Dictionary<string, int> frameSymbolCountHistogram = new Dictionary<string, int>();
-                foreach (Animation.Element element in frame.ElementsList)
+                var frameSymbolCountHistogram = new Dictionary<string, int>();
+                foreach (var element in frame.ElementsList)
                 {
-                    string name = $"{HashToName[element.Image]}";
-                    if (!frameSymbolCountHistogram.ContainsKey(name))
-                    {
-                        frameSymbolCountHistogram.Add(name, 0);
-                    }
+                    var name = $"{HashToName[element.Image]}";
+                    if (!frameSymbolCountHistogram.ContainsKey(name)) frameSymbolCountHistogram.Add(name, 0);
                     frameSymbolCountHistogram[name]++;
                 }
+
                 // update the maximum number of times a symbol
                 // occurs within any single frame by comparing against the 
                 // previous maximum (stored in the maxSymbolCountInAnyFrameHistogram).
-                foreach (string name in frameSymbolCountHistogram.Keys)
+                foreach (var name in frameSymbolCountHistogram.Keys)
                 {
                     if (!maxSymbolCountInAnyFrameHistogram.ContainsKey(name))
-                    {
                         maxSymbolCountInAnyFrameHistogram.Add(name, frameSymbolCountHistogram[name]);
-                    }
-                    maxSymbolCountInAnyFrameHistogram[name] = Math.Max(maxSymbolCountInAnyFrameHistogram[name], frameSymbolCountHistogram[name]);
+                    maxSymbolCountInAnyFrameHistogram[name] = Math.Max(maxSymbolCountInAnyFrameHistogram[name],
+                        frameSymbolCountHistogram[name]);
                 }
             }
+
             return maxSymbolCountInAnyFrameHistogram;
         }
     }

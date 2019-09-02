@@ -1,47 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using KParser.File;
 
 namespace KParser.Conversion
 {
-    class TexturesToAtlasConverter
+    internal class TexturesToAtlasConverter
     {
-        public Textures.File TexturesFile { get; internal set; }
-        public Scml.File ScmlFile { get; internal set; }
+        private readonly AtlasFile atlasFile = null;
+        private readonly BuildFile buildFile = null;
 
-        private bool converted = false;
-        private Atlas.File atlasFile = null;
-        private Build.File buildFile = null;
-
-        public TexturesToAtlasConverter(Textures.File texturesFile, Scml.File scmlFile)
+        public TexturesToAtlasConverter(TextureFile texturesFile, ScmlFile scmlFile)
         {
             TexturesFile = texturesFile;
             ScmlFile = scmlFile;
         }
 
-        public Atlas.File GetAtlasFile()
+        public TextureFile TexturesFile { get; internal set; }
+        public ScmlFile ScmlFile { get; internal set; }
+
+        public AtlasFile GetAtlasFile()
         {
-            if (!converted)
-            {
-                ConvertFile();
-                converted = true;
-            }
             return atlasFile;
         }
 
-        public Build.File GetBuildFile()
+        public BuildFile GetBuildFile()
         {
-            if (!converted)
-            {
-                ConvertFile();
-                converted = true;
-            }
             return buildFile;
-        }
-
-        private void ConvertFile()
-        {
-
         }
     }
 }

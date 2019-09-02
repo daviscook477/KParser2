@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Drawing;
 
 namespace KParser.Textures
 {
-    class File
+    internal class File1
     {
-        public Dictionary<string, Bitmap> NameToBitmap { get; internal set; }
-
-        public File(Dictionary<string, Bitmap> nameToBitmap)
+        public File1(Dictionary<string, Bitmap> nameToBitmap)
         {
             NameToBitmap = nameToBitmap;
         }
+
+        public Dictionary<string, Bitmap> NameToBitmap { get; internal set; }
     }
 }
