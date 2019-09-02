@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using KParser.Animation;
 
 namespace KParser.Conversion
 {
-    class SymbolOccurenceCache
+    internal class SymbolOccurenceCache
     {
-        public Dictionary<int, string> HashToName { get; internal set; }
+        private Frame associatedFrame;
+
+        private Dictionary<Element, int> occurenceMap;
 
         public SymbolOccurenceCache(Dictionary<int, string> hashToName)
         {
             HashToName = hashToName;
         }
 
-        private Dictionary<Animation.Element, int> occurenceMap = null;
-        private Animation.Frame associatedFrame = null;
+        public Dictionary<int, string> HashToName { get; internal set; }
 
         /**
          * Gets the number of times the symbol used by this element was used by elements
@@ -22,28 +22,22 @@ namespace KParser.Conversion
          * 
          * Uses a simple caching scheme based on the frame for performance improvements.
          */
-        public int GetPrecedingOccurencesCount(Animation.Frame frame, Animation.Element element)
+        public int GetPrecedingOccurencesCount(Frame frame, Element element)
         {
-            if (frame != associatedFrame)
-            {
-                RebuildCache(frame);
-            }
+            if (frame != associatedFrame) RebuildCache(frame);
 
             return occurenceMap[element];
         }
 
-        private void RebuildCache(Animation.Frame frame)
+        private void RebuildCache(Frame frame)
         {
-            occurenceMap = new Dictionary<Animation.Element, int>();
+            occurenceMap = new Dictionary<Element, int>();
             associatedFrame = frame;
-            Dictionary<string, int> rollingOccurenceCount = new Dictionary<string, int>();
-            foreach (Animation.Element element in frame.ElementsList)
+            var rollingOccurenceCount = new Dictionary<string, int>();
+            foreach (var element in frame.ElementsList)
             {
-                string name = $"{HashToName[element.Image]}";
-                if (!rollingOccurenceCount.ContainsKey(name))
-                {
-                    rollingOccurenceCount.Add(name, 0);
-                }
+                var name = $"{HashToName[element.Image]}";
+                if (!rollingOccurenceCount.ContainsKey(name)) rollingOccurenceCount.Add(name, 0);
                 occurenceMap.Add(element, rollingOccurenceCount[name]++);
             }
         }

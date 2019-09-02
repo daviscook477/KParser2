@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using KParser.Animation;
 
 namespace KParser.Conversion
 {
-    class SpriteIdProvider
+    internal class SpriteIdProvider
     {
-        public Animation.Bank Bank { get; internal set; }
-        public Dictionary<int, string> HashToName { get; internal set; }
-        public Dictionary<string, int> IdMap { get; internal set; }
+        private SpriteOccurenceCache occurenceCache;
 
-        private SpriteOccurenceCache occurenceCache = null;
+        public Bank Bank;
+        public Dictionary<int, string> HashToName;
+        public Dictionary<string, int> IdMap;
 
-        public SpriteIdProvider(Animation.Bank bank, Dictionary<int, string> hashToName)
+        public SpriteIdProvider(Bank bank, Dictionary<int, string> hashToName)
         {
             Bank = bank;
             HashToName = hashToName;
@@ -20,16 +20,16 @@ namespace KParser.Conversion
             BuildIdMap();
         }
 
-        public int GetId(Animation.Frame frame, Animation.Element element)
+        public int GetId(Frame frame, Element element)
         {
-            string name = NameOf(frame, element);
+            var name = NameOf(frame, element);
             return IdMap[name];
         }
 
-        public string NameOf(Animation.Frame frame, Animation.Element element)
+        public string NameOf(Frame frame, Element element)
         {
-            int precedingOccurences = occurenceCache.GetPrecedingOccurencesCount(frame, element);
-            string name = $"{HashToName[element.Image]}_{element.Index}_{precedingOccurences}";
+            var precedingOccurences = occurenceCache.GetPrecedingOccurencesCount(frame, element);
+            var name = $"{HashToName[element.Image]}_{element.Index}_{precedingOccurences}";
             return name;
         }
 
@@ -48,17 +48,15 @@ namespace KParser.Conversion
          */
         private void BuildIdMap()
         {
-            Dictionary<string, int> elementCountHistogram = GetElementCounts();
+            var elementCountHistogram = GetElementCounts();
             IdMap = new Dictionary<string, int>();
-            int id = 0;
-            foreach (string name in elementCountHistogram.Keys)
-            {
-                for (int i = 0; i < elementCountHistogram[name]; i++)
+            var id = 0;
+            foreach (var name in elementCountHistogram.Keys)
+                for (var i = 0; i < elementCountHistogram[name]; i++)
                 {
                     IdMap.Add($"{name}_{i}", id++);
                     Console.WriteLine($"{name}_{i} : {id - 1}");
                 }
-            }
         }
 
         /**
@@ -90,34 +88,31 @@ namespace KParser.Conversion
          */
         private Dictionary<string, int> GetElementCounts()
         {
-            Dictionary<string, int> maxElementCountInAnyFrameHistogram = new Dictionary<string, int>();
-            foreach (Animation.Frame frame in Bank.FramesList)
+            var maxElementCountInAnyFrameHistogram = new Dictionary<string, int>();
+            foreach (var frame in Bank.FramesList)
             {
                 // determine the maximum number of times a sprite occurs within this specific frame
-                Dictionary<string, int> frameElementCountHistogram = new Dictionary<string, int>();
-                foreach (Animation.Element element in frame.ElementsList)
+                var frameElementCountHistogram = new Dictionary<string, int>();
+                foreach (var element in frame.ElementsList)
                 {
-                    string name = $"{HashToName[element.Image]}_{element.Index}";
-                    if (!frameElementCountHistogram.ContainsKey(name))
-                    {
-                        frameElementCountHistogram.Add(name, 0);
-                    }
+                    var name = $"{HashToName[element.Image]}_{element.Index}";
+                    if (!frameElementCountHistogram.ContainsKey(name)) frameElementCountHistogram.Add(name, 0);
                     frameElementCountHistogram[name]++;
                 }
+
                 // update the maximum number of times a sprite
                 // occurs within any single frame by comparing against the 
                 // previous maximum (stored in the maxElementCountInAnyFrameHistogram).
-                foreach (string name in frameElementCountHistogram.Keys)
+                foreach (var name in frameElementCountHistogram.Keys)
                 {
                     if (!maxElementCountInAnyFrameHistogram.ContainsKey(name))
-                    {
                         maxElementCountInAnyFrameHistogram.Add(name, frameElementCountHistogram[name]);
-                    }
-                    maxElementCountInAnyFrameHistogram[name] = Math.Max(maxElementCountInAnyFrameHistogram[name], frameElementCountHistogram[name]);
+                    maxElementCountInAnyFrameHistogram[name] = Math.Max(maxElementCountInAnyFrameHistogram[name],
+                        frameElementCountHistogram[name]);
                 }
             }
+
             return maxElementCountInAnyFrameHistogram;
         }
-
     }
 }
