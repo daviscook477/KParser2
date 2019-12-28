@@ -108,7 +108,7 @@ namespace KParser.Scml.Conversion
                                 parent = int.Parse(refElement.GetAttribute("parent"));
                             }
                             /* set this frame to contain the data stored in the mainline */
-                            frameArray[id][frameIndex] = new Alternate.Frame(zIndex, parent);
+                            frameArray[id][frameIndex] = new Alternate.Frame(parent, zIndex);
                         }
                     }
                 }
@@ -125,8 +125,6 @@ namespace KParser.Scml.Conversion
                     float x = 0;
                     float y = 0;
                     float angle = 0;
-                    float scaleX = 1.0f;
-                    float scaleY = 1.0f;
                     foreach (XmlNode keyNode in timelineNode.ChildNodes)
                     {
                         if (keyNode is XmlElement && keyNode.Name.Equals("key"))
@@ -169,10 +167,12 @@ namespace KParser.Scml.Conversion
                             {
                                 angle = float.Parse(child.GetAttribute("angle"));
                             }
+                            float scaleX = 1.0f;
                             if (child.HasAttribute("scale_x"))
                             {
                                 scaleX = float.Parse(child.GetAttribute("scale_x"));
                             }
+                            float scaleY = 1.0f;
                             if (child.HasAttribute("scale_y"))
                             {
                                 scaleY = float.Parse(child.GetAttribute("scale_y"));
@@ -275,12 +275,12 @@ namespace KParser.Scml.Conversion
                          * will use a endless loop because eventually at least we know we will
                          * terminate when it hits the exact same before array */
                         int jPrime = j + 1;
-                        while (true)
+                        if (jPrime >= numberOfFrames)
                         {
-                            if (jPrime >= numberOfFrames)
-                            {
-                                jPrime = 0;
-                            }
+                            jPrime = 0;
+                        }
+                        while (presenceArray[i][jPrime])
+                        {
                             if (frameArray[i][jPrime] != null && frameArray[i][jPrime].IsPopulated())
                             {
                                 afterFrame = frameArray[i][jPrime];
@@ -288,6 +288,15 @@ namespace KParser.Scml.Conversion
                                 break;
                             }
                             jPrime++;
+                            if (jPrime >= numberOfFrames)
+                            {
+                                jPrime = 0;
+                            }
+                        }
+                        if (afterFrame == null)
+                        {
+                            afterFrame = beforeFrame;
+                            afterFrameIndex = beforeFrameIndex;
                         }
                     }
                     else if (beforeFrame != null && afterFrame != null)
@@ -302,13 +311,84 @@ namespace KParser.Scml.Conversion
                             afterFrameIndex + ((afterFrameIndex < beforeFrameIndex) ? numberOfFrames : 0), j);
                         float yScale = LinearInterpolate(beforeFrame.ScaleY, afterFrame.ScaleY, beforeFrameIndex,
                             afterFrameIndex + ((afterFrameIndex < beforeFrameIndex) ? numberOfFrames : 0), j);
-                        frameArray[i][j] = new Alternate.Frame(beforeFrame.ParentId, beforeFrame.ZIndex);
+                        if (frameArray[i][j] == null)
+                        {
+                            frameArray[i][j] = new Alternate.Frame(beforeFrame.ParentId, beforeFrame.ZIndex);
+                        }
                         frameArray[i][j].Populate(beforeFrame.Folder, beforeFrame.File, x, y, angle, xScale, yScale);
                     }
                 }
             }
+            for (int i = 0; i < idProvider.Size(); i++)
+            {
+                Alternate.Frame beforeFrame = null;
+                Alternate.Frame afterFrame = null;
+                int beforeFrameIndex = -1;
+                int afterFrameIndex = -1;
+                for (int j = 0; j < numberOfFrames; j++)
+                {
+                    /* skip this frame if it isn't supposed to be present */
+                    if (!presenceArray[i][j])
+                    {
+                        continue;
+                    }
+                    /* if this frame exists and is populated then it will be used
+                     * as the before frame */
+                    if (frameArray[i][j] != null && frameArray[i][j].IsPopulated())
+                    {
+                        beforeFrame = frameArray[i][j];
+                        beforeFrameIndex = j;
+                        /* probe forward to find the after array when a before array is found
+                         * will use a endless loop because eventually at least we know we will
+                         * terminate when it hits the exact same before array */
+                        int jPrime = j + 1;
+                        if (jPrime >= numberOfFrames)
+                        {
+                            jPrime = 0;
+                        }
+                        while (presenceArray[i][jPrime])
+                        {
+                            if (frameArray[i][jPrime] != null && frameArray[i][jPrime].IsPopulated())
+                            {
+                                afterFrame = frameArray[i][jPrime];
+                                afterFrameIndex = jPrime;
+                                break;
+                            }
+                            jPrime++;
+                            if (jPrime >= numberOfFrames)
+                            {
+                                jPrime = 0;
+                            }
+                        }
+                        if (afterFrame == null)
+                        {
+                            afterFrame = beforeFrame;
+                            afterFrameIndex = beforeFrameIndex;
+                        }
+                    }
+                    else if (beforeFrame != null && afterFrame != null)
+                    {
+                        float x = LinearInterpolate(beforeFrame.X, afterFrame.X, beforeFrameIndex,
+                            afterFrameIndex + ((afterFrameIndex < beforeFrameIndex) ? numberOfFrames : 0), j);
+                        float y = LinearInterpolate(beforeFrame.Y, afterFrame.Y, beforeFrameIndex,
+                            afterFrameIndex + ((afterFrameIndex < beforeFrameIndex) ? numberOfFrames : 0), j);
+                        float angle = LinearInterpolateAngle(beforeFrame.Angle, afterFrame.Angle, beforeFrameIndex,
+                            afterFrameIndex + ((afterFrameIndex < beforeFrameIndex) ? numberOfFrames : 0), j);
+                        float xScale = LinearInterpolate(beforeFrame.ScaleX, afterFrame.ScaleX, beforeFrameIndex,
+                            afterFrameIndex + ((afterFrameIndex < beforeFrameIndex) ? numberOfFrames : 0), j);
+                        float yScale = LinearInterpolate(beforeFrame.ScaleY, afterFrame.ScaleY, beforeFrameIndex,
+                            afterFrameIndex + ((afterFrameIndex < beforeFrameIndex) ? numberOfFrames : 0), j);
+                        if (frameArray[i][j] == null)
+                        {
+                            frameArray[i][j] = new Alternate.Frame(beforeFrame.ParentId, beforeFrame.ZIndex);
+                        }
+                        frameArray[i][j].Populate(beforeFrame.Folder, beforeFrame.File, x, y, angle, xScale, yScale);
+                    }
+                }
+            }
+            /* interpolation is run twice to fix issue where time = 0 is not key frame */
 
-            return new Alternate.Animation(name, interval, length, frameArray);
+            return new Alternate.Animation(name, interval, length, frameArray, idProvider);
         }
 
         private float LinearInterpolate(float x0, float x1, float t0, float t1, float t)
@@ -322,8 +402,8 @@ namespace KParser.Scml.Conversion
             return a * t + b;
         }
 
-        /* requires that both input angles x0 x1 are within 0 to 2pi and returns an interpolated
-         * angle also between 0 and 2pi
+        /* requires that both input angles x0 x1 are within 0 to 360 and returns an interpolated
+         * angle also between 0 and 360
          * interpolates the shortest route rather than explicitly clockwise or counterclockwise */
         private float LinearInterpolateAngle(float x0, float x1, float t0, float t1, float t)
         {
@@ -334,22 +414,22 @@ namespace KParser.Scml.Conversion
             /* see https://stackoverflow.com/questions/2708476/rotation-interpolation for math
              * explanation of why this works */
             float delta = Math.Abs(x1 - x0);
-            if (delta > Math.PI)
+            if (delta > 180)
             {
                 if (x1 > x0)
                 {
-                    x0 += (float) (2 * Math.PI);
+                    x0 += 360;
                 }
                 else
                 {
-                    x1 += (float) (2 * Math.PI);
+                    x1 += 360;
                 }
             }
 
             float x = LinearInterpolate(x0, x1, t0, t1, t);
-            if (x >= 2 * Math.PI)
+            if (x >= 360)
             {
-                x -= (float)(2 * Math.PI);
+                x -= 360;
             }
             return x;
         }

@@ -22,12 +22,15 @@ namespace KParser.Scml.Alternate
          * of the sprites and bones in the animation, 2nd axis is the timesteps */
         public List<List<Frame>> FrameArray { get; set; }
 
-        public Animation(string name, int step, int length, List<List<Frame>> frameArray)
+        public SpriteSymbolIdProvider IdProvider { get; set; }
+
+        public Animation(string name, int step, int length, List<List<Frame>> frameArray, SpriteSymbolIdProvider idProvider)
         {
             Name = name;
             Step = step;
             Length = length;
             FrameArray = frameArray;
+            IdProvider = idProvider;
         }
     }
 }

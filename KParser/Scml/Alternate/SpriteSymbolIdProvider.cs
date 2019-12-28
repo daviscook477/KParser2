@@ -18,6 +18,8 @@ namespace KParser.Scml.Alternate
 
         public Dictionary<int, KParser.Conversion.ChildType> TimelineTypeMap { get; set; }
 
+        public Dictionary<int, string> TimelineNameMap { get; set; }
+
         private int nextIndex = 0;
 
         public SpriteSymbolIdProvider(Scml.File scmlFile, string name)
@@ -26,6 +28,7 @@ namespace KParser.Scml.Alternate
             Name = name;
             TimelineIdMap = new Dictionary<int, int>();
             TimelineTypeMap = new Dictionary<int, KParser.Conversion.ChildType>();
+            TimelineNameMap = new Dictionary<int, string>();
             BuildTimelineIdMap();
         }
 
@@ -37,13 +40,21 @@ namespace KParser.Scml.Alternate
             return TimelineIdMap[timelineId];
         }
 
-        /* get the assigned type for a specific timeline
+        /* get the assigned type for a specific timeline but not referenced by timeline id
+         * instead referenced by its converted id (i.e. timelineId gone through GetId)
          * each timeline will either represent a bone for all of its frames
          * or a sprite for all of its frames - never can change for the duration
          * of just a single timeline */
-        public KParser.Conversion.ChildType GetType(int timelineId)
+        public KParser.Conversion.ChildType GetType(int id)
         {
-            return TimelineTypeMap[timelineId];
+            return TimelineTypeMap[id];
+        }
+
+        /* get the assigned name for a specific timeline but not referenced by timeline id
+         * instead referenced by its converted id (i.e. timelineId gone through GetId) */
+        public string GetName(int id)
+        {
+            return TimelineNameMap[id];
         }
 
         /* gets the amount of ids that are maintained
@@ -76,13 +87,24 @@ namespace KParser.Scml.Alternate
 
                             /* set the type of the timeline to either sprite or bone based on which is the first seen for the timline
                              * since the timeline type is invariant across frames */
-                            TimelineTypeMap[timeline] = KParser.Conversion.ChildType.Sprite;
+                            TimelineTypeMap[TimelineIdMap[timeline]] = KParser.Conversion.ChildType.Sprite;
                             if (refNode.Name.Equals("bone_ref"))
                             {
-                                TimelineTypeMap[timeline] = KParser.Conversion.ChildType.Bone;
+                                TimelineTypeMap[TimelineIdMap[timeline]] = KParser.Conversion.ChildType.Bone;
                             }
                         }
                     }
+                }
+            }
+
+            foreach (XmlNode timelineNode in animation.ChildNodes)
+            {
+                if (timelineNode is XmlElement && timelineNode.Name.Equals("timeline"))
+                {
+                    XmlElement timelineElement = (XmlElement)timelineNode;
+                    int id = int.Parse(timelineElement.GetAttribute("id"));
+                    string name = timelineElement.GetAttribute("name");
+                    TimelineNameMap[TimelineIdMap[id]] = name;
                 }
             }
         }
