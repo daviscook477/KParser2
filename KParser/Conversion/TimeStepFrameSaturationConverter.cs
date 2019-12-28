@@ -5,7 +5,7 @@ using System.Xml;
 
 namespace KParser.Conversion
 {
-    class TimeStepFrameSaturationConverter
+    /*class TimeStepFrameSaturationConverter
     {
         public XmlDocument BaseScml { get; internal set; }
 
@@ -71,5 +71,5 @@ namespace KParser.Conversion
             }
             return null;
         }
-    }
+    }*/
 }

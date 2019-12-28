@@ -4,9 +4,9 @@ using System.Text;
 
 namespace KParser.Conversion
 {
-    class FramePresenceProvider
+    /*class FramePresenceProvider
     {
         public Scml.File ScmlFile { get; internal set; }
         public Dictionary<int, List<bool>> 
-    }
+    }*/
 }
